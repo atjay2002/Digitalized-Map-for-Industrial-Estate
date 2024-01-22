@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digitalized Map for Industrial Estate</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-image: url('{{ url_for('static', filename='bggif.gif') }}');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            height: 100vh;
+            /* Set the height to 100% of the viewport height */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            /* Set text color to white or any contrasting color */
+            font-family: 'Arial', sans-serif;
+        }
+
+        b {
+            font-size: 1.2em;
+            text-align: justify;
+            font-weight: bold;
+            color: white;         
+            display: block;           
+            margin-bottom: 10px;
+            align-items: center;
+           margin: 50px;
+            margin-top: 50px;
+        }
+
+        input[type="radio"] {
+            margin-right: 10px;
+            color: #3498db;
+            /* Set your desired color */
+        }
+
+        .radio {
+            /* Choose your desired alignment: */
+            text-align: left;
+            /* Align labels to the left */
+
+        }
+
+        .select-button {
+            justify-content: center;
+            margin-left: 20px;
+            background-color: #4CAF50;
+            /* Green background */
+            margin-top: 50px;
+            border: none;
+            /* Remove default border */
+            color: white;
+            /* White text */
+            padding: 15px 32px;
+            /* Adequate padding */
+            text-align: center;
+            /* Center text */
+            text-decoration: none;
+            /* Remove underline */
+            display: inline-block;
+            /* Proper spacing */
+            font-size: 16px;
+            /* Adjust font size */
+            border-radius: 5px;
+            /* Rounded corners */
+        }
+
+        .radio a {
+            /* Your desired styles for the <a> tag */
+            font-size: large;
+            color: skyblue;
+            /* Example style: Make the text blue */
+            font-weight: bold;
+            /* Example style: Make the text bold */
+            text-decoration: none;
+            padding: 100px;
+            /* Example style: Remove underline */
+            text-decoration: solid;
+        }
+        #additional-info {
+        margin-top: 20px;
+        padding: 20px;
+        text-align: justify;
+        display: block;
+        border-radius: 5px;
+        align-items: center;
+    }
+
+        #additional-info h2 {
+            color: white;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        #additional-info h3 {
+            color: white;
+            font-size: 18px;
+            margin-top: 15px;
+            margin-bottom: 5px;
+        }
+
+        #additional-info p {
+            color: white;
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        #additional-info ul {
+            color: white;
+            font-size: 16px;
+            list-style-type: disc;
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #4CAF50; /* Green background color */
+            color: white; /* White text color */
+            padding: 10px 20px; /* Padding inside the button */
+            border: none; /* No border */
+            border-radius: 5px; /* Rounded corners */
+            cursor: pointer; /* Cursor style on hover */
+        }
+
+        /* Hover effect for the button */
+        button:hover {
+            background-color: #45a049; /* Darker green color on hover */
+        }
+    </style>
+</head>
+
+<body>
+    <div style="text-align:center;">
+        <h2>Enter your Current Location</h2>
+        <b>We require your current location. Please allow the popup to manually obtain your location. If the detected location is incorrect, click 'Cancel' in the popup and enter it manually.</b>
+        <button onclick="getLocation()">Detect My Location</button>
+    </div>
+    <div id="additional-info">
+            <h2>Explore Industrial Estates in Tamil Nadu</h2>
+            <p>
+                Discover the thriving industrial landscape of Tamil Nadu, a hub for various industries.
+                Our project provides information about key industrial estates, manufacturing units,
+                and opportunities for entrepreneurs in the region.
+            </p>
+
+            <h3>Key Features:</h3>
+            <ul>
+                <li>Explore detailed information about industrial estates.</li>
+                <li>Find potential investment opportunities and startup ideas.</li>
+                <li>Connect with established industries for collaboration.</li>
+            </ul>
+
+            <h3>Why Tamil Nadu?</h3>
+            <p>
+                Tamil Nadu offers a strategic location, skilled workforce, and a business-friendly environment,
+                making it an ideal destination for industrial growth. Whether you're an investor, entrepreneur,
+                or industry enthusiast, our project aims to provide valuable insights into the industrial ecosystem
+                of Tamil Nadu.
+            </p>
+        </div>
+    </div>
+    <script>
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(successLocation, errorLocation, {
+                    enableHighAccuracy: true
+                });
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        function successLocation(position) {
+            var latitude = position.coords.latitude;
+            var longitude = position.coords.longitude;
+            var message = "Your location is (" + latitude + ", " + longitude + ").\nIs this location correct?";
+            if (confirm(message)) {
+                window.location.href = "/map?latitude=" + latitude + "&longitude=" + longitude;
+
+            } else {
+                var districts = [
+                    "Chennai",
+                    "Coimbatore",
+                    "Madurai",
+                    "Tiruchirappalli",
+                    "Salem",
+                    "Tirunelveli",
+                    "Erode",
+                    "Vellore",
+                    "Thoothukudi",
+                    "Dindigul",
+                    "Thanjavur",
+                    "Ranipet",
+                    "Sivaganga",
+                    "Cuddalore",
+                    "Kancheepuram",
+                    "Namakkal",
+                    "Karur",
+                    "Villupuram",
+                    "Virudhunagar",
+                    "Krishnagiri"
+
+                ];
+
+                var districtList = "";
+                for (var i = 0; i < districts.length; i++) {
+                    districtList += '<input type="radio" name="district" value="' + districts[i] + '"> ' + districts[i] + '<br>';
+                }
+                districtList += '<button onclick="selectDistrict()" class="select-button" >Select</button>';
+                document.body.innerHTML = '<div class="radio" ><a>Select your district</a><br>' + districtList + '</div>';
+            }
+        }
+
+        function errorLocation(error) {
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    // Handle permission denied error
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    // Handle position unavailable error
+                    break;
+                case error.TIMEOUT:
+                    // Handle timeout error
+                    break;
+                case error.UNKNOWN_ERROR:
+                    // Handle unknown error
+                    break;
+            }
+        }
+
+        function selectDistrict() {
+            var selectedDistrict = document.querySelector('input[name="district"]:checked').value;
+            var latitude, longitude;
+            switch (selectedDistrict) {
+                case "Chennai":
+                    latitude = 13.0827;
+                    longitude = 80.2707;
+                    break;
+                case "Coimbatore":
+                    latitude = 11.0168;
+                    longitude = 76.9558;
+                    break;
+                case "Madurai":
+                    latitude = 9.9252;
+                    longitude = 78.1198;
+                    break;
+                case "Tiruchirappalli":
+                    latitude = 10.7905;
+                    longitude = 78.7047;
+                    break;
+                case "Salem":
+                    latitude = 11.6643;
+                    longitude = 78.1460;
+                    break;
+                case "Tirunelveli":
+                    latitude = 8.7139;
+                    longitude = 77.7567;
+                    break;
+                case "Erode":
+                    latitude = 11.3692;
+                    longitude = 77.6739;
+                    break;
+                case "Vellore":
+                    latitude = 12.9165;
+                    longitude = 79.1325;
+                    break;
+                case "Thoothukudi":
+                    latitude = 8.8054;
+                    longitude = 78.1560;
+                    break;
+                case "Dindigul":
+                    latitude = 10.3646;
+                    longitude = 77.9690;
+                    break;
+                case "Thanjavur":
+                    latitude = 10.7905;
+                    longitude = 79.1378;
+                    break;
+                case "Ranipet":
+                    latitude = 12.9279;
+                    longitude = 79.3325;
+                    break;
+                case "Sivaganga":
+                    latitude = 9.8487;
+                    longitude = 78.4809;
+                    break;
+                case "Cuddalore":
+                    latitude = 11.7460;
+                    longitude = 79.7683;
+                    break;
+                case "Kancheepuram":
+                    latitude = 12.8375;
+                    longitude = 79.7036;
+                    break;
+                case "Namakkal":
+                    latitude = 11.2194;
+                    longitude = 78.1670;
+                    break;
+                case "Karur":
+                    latitude = 10.9591;
+                    longitude = 78.0776;
+                    break;
+                case "Villupuram":
+                    latitude = 11.9341;
+                    longitude = 79.8304;
+                    break;
+                case "Virudhunagar":
+                    latitude = 9.5916;
+                    longitude = 77.9515;
+                    break;
+                case "Krishnagiri":
+                    latitude = 12.5186;
+                    longitude = 78.2132;
+                    break;
+                // Add more districts here...
+                default:
+                    latitude = 0;
+                    longitude = 0;
+                    break;
+            }
+
+            window.location.href = "/map?latitude=" + latitude + "&longitude=" + longitude;
+        }
+    </script>
+</body>
+
+</html>

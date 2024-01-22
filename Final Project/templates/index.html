@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <script src='https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js'></script>
+  <link href='https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css' rel='stylesheet' />
+  <script
+    src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.0/mapbox-gl-directions.js"></script>
+  <link rel="stylesheet"
+    href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.1.0/mapbox-gl-directions.css"
+    type="text/css" />
+  <title>Locate Me</title>
+  <style>
+    body {
+      margin: 0;
+    }
+
+    #map {
+      height: 100vh;
+      width: 100vw;
+    }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Your existing JavaScript code here
+      mapboxgl.accessToken = "pk.eyJ1Ijoic3ViaGFtcHJlZXQiLCJhIjoiY2toY2IwejF1MDdodzJxbWRuZHAweDV6aiJ9.Ys8MP5kVTk5P9V2TDvnuDg";
+
+      // Get the location parameters from the Flask code
+      var user_latitude = {{ user_latitude }};
+    var user_longitude = {{ user_longitude }};
+    var industry_latitude = {{ industry_latitude }};
+    var industry_longitude = {{ industry_longitude }};
+
+    console.log('User Latitude:', user_latitude);
+    console.log('User Longitude:', user_longitude);
+    console.log('Industry Latitude:', industry_latitude);
+    console.log('Industry Longitude:', industry_longitude);
+
+    // Create user and industry position objects
+    var userPosition = [user_longitude, user_latitude];
+    var industryPosition = [industry_longitude, industry_latitude];
+
+    // Set up the map with the user position as the center
+    const map = new mapboxgl.Map({
+      container: "map",
+      style: "mapbox://styles/mapbox/streets-v11",
+      center: userPosition,
+      zoom: 15
+    });
+
+    // Add a navigation control to the map
+    const nav = new mapboxgl.NavigationControl();
+    map.addControl(nav);
+
+    // Add a directions control to the map
+    var directions = new MapboxDirections({
+      accessToken: mapboxgl.accessToken,
+      unit: 'metric',
+      profile: 'mapbox/driving'
+    });
+
+    map.addControl(directions, "top-left");
+
+    // Set the origin and destination of the directions to the user and industry positions
+    directions.setOrigin(userPosition);
+    directions.setDestination(industryPosition);
+    });
+  </script>
+</head>
+
+<body>
+  <!-- Add a div element for the Mapbox map -->
+  <div id='map'></div>
+</body>
+
+</html>

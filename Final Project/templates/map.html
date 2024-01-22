@@ -1,0 +1,588 @@
+<!-- map.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tamil Nadu Industrial Estates</title>
+
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" rel="stylesheet" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow-y: hidden;
+        }
+
+        #map {
+            height: 100vh;
+            /* Adjust the height as needed */
+            /*width: 50px;*/
+        }
+
+ 
+
+        .link-style {
+            text-decoration: none;
+            color: white;
+            background-color: blue;
+            padding: 8px 16px;
+            /* Adjust padding as needed */
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 10px;
+            /* Adjust margin as needed */
+        }
+
+        .link-style:hover {
+            background-color: darkblue;
+        }
+
+        #websiteLink,
+        #locateMeLink {
+            text-decoration: none;
+            color: white;
+            background-color: blue;
+            padding: 8px 16px;
+            /* Adjust padding as needed */
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 0px;
+            padding-bottom: 10px;
+            /* Adjust margin as needed */
+        }
+
+        #searchContainer {
+            padding-top: 25px;
+            #searchContainer {
+            position: absolute;
+            top: 50px; /* Adjust this value as needed */
+            left: 50%; /* This will center the container horizontally */
+            transform: translateX(-50%); /* This will center the container horizontally */
+            }
+            }
+
+            #searchInput {
+                padding: 10px;
+                border: 1px solid #ccc;
+                margin-right: 10px;
+                border-radius: 5px;
+            }
+
+            #searchBtn {
+                padding: 10px 15px;
+                background-color: #4CAF50;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+
+            #searchBtn:hover {
+                background-color: #45a049;
+            }
+
+
+        #websiteLink:hover,
+        #locateMeLink:hover {
+            background-color: darkblue;
+        }
+
+        #detailsBox {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1;
+            background-color: #fff;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            max-width: 300px;
+            display: none;
+        }
+
+        #suggestionBox {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1;
+            background-color: #fff;
+            padding-top: 25px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            max-width: 300px;
+            display: none;
+        }
+        
+    </style>
+</head>
+
+<body>
+
+    <div id="map"></div>
+    <div id="searchContainer" style="position: absolute; top: 0; left: 0; width: 100%; text-align: center;">
+        <input type="text" id="searchInput" placeholder="Search for an industrial estate">
+        <button id="searchBtn">Search</button>
+    </div>
+
+    <div id="detailsAndSuggestionContainer">
+        <div id="detailsBox" class="box">
+            <h3 id="estateName"></h3>
+            <p id="estateDetails"></p>
+        </div>
+        <div id="suggestionBox" class="box">
+            <!-- Suggestion box content -->
+            <h3>Suggestion:</h3>
+            <p>Example Suggestion</p>
+        </div>
+    </div>
+
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js"></script>
+
+    <script>
+        mapboxgl.accessToken = "pk.eyJ1Ijoic3ViaGFtcHJlZXQiLCJhIjoiY2toY2IwejF1MDdodzJxbWRuZHAweDV6aiJ9.Ys8MP5kVTk5P9V2TDvnuDg";
+
+        // Retrieve user's location from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const userLatitude = parseFloat(urlParams.get('latitude')) || 0;
+        const userLongitude = parseFloat(urlParams.get('longitude')) || 0;
+        const userLocation = [userLongitude, userLatitude];
+
+        // Define estates array globally
+        const estates = [
+            {
+                "name": "Bharat Heavy Electricals Limited (BHEL)",
+                "location": [78.7958, 10.7791],
+                "details": "High Pressure Boiler Plant, Tiruchirappalli Ho, Trichy - 620001. Phone: (0431) 2571627, 2577434, 2577453, 2577723, 2571662, 2577434, 2577985, 2577359, 2574205, 2574354, 2574695, 2574552",
+                "image": "https://pbs.twimg.com/media/F7ffRzFXgAA-e63.jpg:large",
+                "url": "https://www.bhel.com/",
+                "qr": "static/image1.png",
+                "suggest": "waterplant"
+            },
+            {
+                "name": "Ashvikha Stainless Steel",
+                "location": [78.73125226740429, 10.7957684741912],
+                "details": "No 102 Kanchana Towers, Near Central Bus Stand, Williams Road, Trichy, Trichy - 620001. Phone: 9940988688, 9360311009",
+                "image": "https://s3.amazonaws.com/attachments.infoisinfo.com/categories/steel.jpg",
+                "url": "https://www.justdial.com/Trichy/Ashvikha-Stainless-Steel-Near-Central-Bus-Stand-Thillai-Nagar/0431PX431-X431-091020164904-K4V2_BZDET",
+                "qr": ""
+            },
+            {
+                "name": "Cethar Vessels Ltd",
+                "location": [78.6688468111777, 10.788297711744184],
+                "details": "No 4, Dindigul Road, Tiruchirappalli HO, Trichy - 620001. Phone: (0431) 2484000",
+                "image": "https://images.jdmagicbox.com/comp/trichy/j2/0431px431.x431.171205121603.e9j2/catalogue/cethar-vessels-pvt-ltd-trichy-boiler-manufacturers-7i6izcxgim.jpg",
+                "url": "https://www.justdial.com/Trichy/Cethar-Vessels-Ltd-Opposite-National-College-Tiruchirappalli-Ho/0431PX431-X431-101113114849-T6T4_BZDET"
+            },
+            {
+                "name": "Abirami Engineering(temp closed)",
+                "location": [78.77151930721325, 10.777766247686117],
+                "details": "No 124/10, Pupils Nagar, Tiruverambur, Trichy - 620013. Phone: 9994455157, 9500955157",
+                "image": "https://static.connect2india.com/c2icd/company_resources/3311461/images/products/product-transformer-routine-testing.jpg",
+                "url": "https://www.justdial.com/jdmart/Trichy/Abirami-Engineering-Pupils-Nagar-Tiruverambur/0431PX431-X431-110219114948-P9W8_BZDET/catalogue"
+            },
+            {
+                "name": "Plasto Metalcast Engineering",
+                "location": [78.79867242331537, 10.75090747377748],
+                "details": "Plasto Metalcast Engineering is a sole proprietorship, with its factory at No.3, SIDCO Ancillary Industrial Estate, Boiler Project P.O., Thiruvermbur, Trichy – 620 014. It is engaged in the manufacture of machinery for Pre-cured Tread Rubber, Tyre Retreading, New Tyre manufacturing and other rubber process related machinery. It is an existing firm doing business for the past 15 years and consistently improving the turn-over by marketing all over India including exports. Phone: (0431) 2551195, 6451968, 6451725, 2552414",
+                "image": "https://www.plastometalcast.com/images/index_09.jpg", // Replace with the actual image URL
+                "url": "https://www.plastometalcast.com/aboutus.htm"
+            }
+            ,
+            {
+                "name": "Roof Plus",
+                "location": [78.69560970668122, 10.802873450912111],
+                "details": "No 6, Opposite Police Out Post, Good Shed Road, Tiruchirappalli Ho, Trichy - 620001. Phone: 9894588883, 8056788883",
+                "image": "https://pbs.twimg.com/media/F7ffRzFXgAA-e63.jpg:large",
+                "url": "https://www.bhel.com/"
+            },
+            {
+                "name": "Bimax Laboratories(temp closed- its like a Pharmaceutical lab)",
+                "location": [78.6729003360492, 10.805661852571125],
+                "details": "5/11, Lawson`s Road, Raja Colony Extension, Tiruchirappalli HO, Trichy - 620001. Phone: (0431) 2411406",
+                "image": "https://pbs.twimg.com/media/F7ffRzFXgAA-e63.jpg:large",
+                "url": "https://www.bhel.com/"
+            },
+            {
+                "name": "Dalmia Cement Ltd (Regional Office)- it is just office for dalmia not industry. u want to like startup use the regional office",
+                "location": [78.68440483604955, 10.822648803340114],
+                "details": "No 86 C 3rd Floor Sterling Biz Park, Fort Station Road, Thillai Nagar, Trichy - 620018. Phone: 9842416326, 9842459901",
+                "image": "https://pbs.twimg.com/media/F7ffRzFXgAA-e63.jpg:large",
+                "url": "https://www.bhel.com/",
+                "qr": "static/image2.png"
+            },
+            {
+                "name": "Dalmia Cement (Bharat) Ltd-near dalmia connect with railway wil be more efficient to export and import contract for entrepreneur",
+                "location": [78.94456265499204, 10.969499050089965],
+                "details": "Dalmiapuram, T Pudupatti Trichy, Trichy - 621217. Phone: (04326) 235123, 235377",
+                "image": "https://pbs.twimg.com/media/F7ffRzFXgAA-e63.jpg:large",
+                "url": "https://www.bhel.com/"
+            },
+            {
+                "name": "Chettinad Cement Corporation Ltd",
+                "location": [78.6834591937202, 10.814988786908582],
+                "details": "No 25-C Geethanjali Apartments, Sastri Road, Thillai Nagar, Trichy - 620018. Phone: (0431) 2740288",
+                "image": "https://pbs.twimg.com/media/F7ffRzFXgAA-e63.jpg:large",
+                "url": "https://www.bhel.com/"
+            },
+            {
+                "name": "Power Trading Company - ( Cement Dealer, Steel Dealer and Steel Distributor )",
+                "location": [78.71346043656729, 10.747363930594497],
+                "details": "no.203, beastan tannery campus, Thirunagar, Gundur, Tiruchirappalli, Tamil Nadu 620007. Phone: 04312421744",
+                "image": "https://pbs.twimg.com/media/F7ffRzFXgAA-e63.jpg:large",
+                "url": "https://www.bhel.com/"
+            },
+            {
+                "name": "Madras Cements Ltd",
+                "location": [78.68055723604945, 10.818963008814892],
+                "details": "No 10a Lakshmi Arcade 2nd Floor, Opposite HDFC Bank, 11th Cross Street, Thillai Nagar, Trichy - 620018. Phone: 9443757720, 9443757702",
+                "image": "https://pbs.twimg.com/media/F7ffRzFXgAA-e63.jpg:large",
+                "url": "https://www.bhel.com/"
+            },
+            {
+                "name": "Sriram Chemicals Factory",
+                "location": [78.73732117089511, 10.93584845402814],
+                "details": "SF NO : 163, 3 & 5, Samayapuram - Kariyamanickam Rd, Tamil Nadu 621112. Phone: 09994791111",
+                "image": "https://pbs.twimg.com/media/F7ffRzFXgAA-e63.jpg:large",
+                "url": "https://www.bhel.com/"
+            },
+            {
+                "name": "Sriram Chemicals",
+                "location": [78.6913159247562, 10.856285021252509],
+                "details": "# 28, Mambazha Salai, Ganapathy Nagar Extension, Tiruchirappalli HO, Trichy - 620001. Phone: 9443351758, (0431) 2670117",
+                "image": "https://pbs.twimg.com/media/F7ffRzFXgAA-e63.jpg:large",
+                "url": "https://www.bhel.com/"
+            },
+            {
+                "name": "Veesons Energy Systems Pvt Ltd- permanently closed best place for industrial startup",
+                "location": [78.82096690721266, 10.751623261318288],
+                "details": "No 14/2-C Industrial Estate, Thuvakkudi, Trichy - 620015. Phone: (0431) 2501010, 2501011, 2501015",
+                "image": "https://pbs.twimg.com/media/F7ffRzFXgAA-e63.jpg:large",
+                "url": "https://www.bhel.com/"
+            },
+            {
+                "name": "Matrix Boilers Pvt Ltd",
+                "location": [78.69435597056686, 10.798225836049657],
+                "details": "No 9 B Mrc Complex 1st Floor, Near TVS Toll Gate, Pudukottai Road, Khajamalai Colony, Trichy - 620020. Phone: 9367745007",
+                "image": "https://pbs.twimg.com/media/F7ffRzFXgAA-e63.jpg:large",
+                "url": "https://www.bhel.com/"
+            },
+            {
+                "name": "Baby Engineering Pvt Ltd(nearby vesons if you want tie up)",
+                "location": [78.81245172255424, 10.75340912553915],
+                "details": "No 37, D P Estate, Thuvakkudi, Trichy - 620015. Phone: (0431) 2500800, 3041300",
+                "image": "https://pbs.twimg.com/media/F7ffRzFXgAA-e63.jpg:large",
+                "url": "https://www.bhel.com/"
+            },
+            {
+                "name": "Ellora Engineering Co(temp closed)",
+                "location": [78.70255684357123, 10.760649120760828],
+                "details": "No 2/157, Ezhil Nagar Kailasapuram, Thamarai 9th Street, Boiler Project, Trichy - 620014. Phone: 9865017051, (0431) 2551738",
+                "image": "https://pbs.twimg.com/media/F7ffRzFXgAA-e63.jpg:large",
+                "url": "https://www.bhel.com/"
+            },
+            {
+                "name": "Sri Durga Engineering Industries",
+                "location": [78.79986513002254, 10.764551085616432],
+                "details": "10-A, Jaganathapuram, Ariyamangalam, Kalyanaraman Street, Ariyamangalam, Trichy - 620010. Phone: (0431) 2440105",
+                "image": "https://pbs.twimg.com/media/F7ffRzFXgAA-e63.jpg:large",
+                "url": "https://www.bhel.com/"
+            },
+            {
+                "name": "FAB Well Engineering & Fabricators",
+                "location": [78.81053471842864, 10.757284150696872],
+                "details": "E-33&38, Developed Plots Estate, Thuvakkudi, Trichy - 620015. Phone: (0431) 6451471",
+                "image": "https://pbs.twimg.com/media/F7ffRzFXgAA-e63.jpg:large",
+                "url": "https://www.bhel.com/"
+            },
+            {
+                "name": "Precisim Engineering Works(temp closed)",
+                "location": [78.69424819312393, 10.805305993066879],
+                "details": "84, Palakarai Subway, Palakarai Main Road, Tiruchirappalli HO, Trichy - 620001. Phone: 9443837332",
+                "image": "https://pbs.twimg.com/media/F7ffRzFXgAA-e63.jpg:large",
+                "url": "https://www.bhel.com/"
+            },
+            {
+                "name": "JJ Engineering Works and Oil Mill Rotary",
+                "location": [78.73691028624786, 10.805540270238678],
+                "details": "Venugopal Nagar, Pappakurichi Kattur, Tiruchirappalli, Tamil Nadu 620019\nPhone Number: 9443837332"
+            },
+            {
+                "name": "J J ENGINEERING WORKS(temp closed)",
+                "location": [78.7355691818245, 10.80294776240546],
+                "details": "BUS STOP, NO-52 PUGALNAGAR, near OIL MILL, Pappakurichi Kattur, Tiruchirappalli, Tamil Nadu 620019"
+            },
+            {
+                "name": "PGS ENGINEERING CONTRACTOR(frp tank, PPFRPTANK,ACID TANK)",
+                "location": [77.82296592072886, 11.80126571934812],
+                "details": "SIDCO Industries, Mettur Dam sidco industrial estate, karumalaikoodal, mettur dam, salem, Estate, Rs-2, Karumalai Koodal, Tamil Nadu 636402"
+            },
+            {
+                "name": "Tiruchi Distilleries and Chemicals Limited, SF",
+                "location": [78.71678500721302, 10.8010390708193],
+                "details": "No. 47 Senthaneerpuram, Tiruchi\nitem  product: Distilleries\nBye Pass Road, Senthaneerpuram, Tiruchirappalli, Tamil Nadu 620004"
+            },
+            {
+                "name": "Tiruchi Steel Rolling Mills Ltd.",
+                "location": [78.71718803604904, 10.797977367092132],
+                "details": "Senthaneerpuram, Ariyamangalam Area, Tiruchirappalli, Tamil Nadu 620004\nitem mfctred: Alloy Steel"
+            },
+            {
+                "name": "Indian Oil Corporation Limited, 26 Goodshed Road, Tiruchi.",
+                "location": [78.71749428633716, 10.788044771723241],
+                "details": "item mfctrd: Petrol Pumping"
+            },
+            {
+                "name": "Indian Oil Corporation Limited, 26 Goodshed Road, Tiruchi.",
+                "location": [78.71749428633716, 10.788044771723241],
+                "details": "itm mfctrd:Petrol Pumping"
+            },
+            {
+                "name": "Bharat Petrolium Corporation Ltd., S.No.2516,2517 Goodshed Road, Trichy.",
+                "location": [78.71749428633716, 10.788044771723241],
+                "details": "item mfcttred: Petrol Pumping"
+            },
+            {
+                "name": "Sea Horse Industries Limited, Meter Factory Road, Tiruchi - 1",
+                "location": [78.71749428633716, 10.788044771723241],
+                "details": "item mfcted: Energy Metre"
+            },
+            {
+                "name": "Sri Meenakshi Mills, 718, Kovilpatty Road, Usilampatti 621 312, Manapparai Tk SPG Mills",
+                "location": [78.71749428633716, 10.788044771723241],
+                "details": ""
+            },
+            {
+                "name": "Maris Spinners Limited Unit II, S.No. 179 & 183, Sevaloor Village, Manapparai",
+                "location": [78.71749428633716, 10.788044771723241],
+                "details": "item mfctred: SPG Mills 500"
+            },
+            {
+                "name": "Radha Textiles (P) Ltd., 125/5, 126/3 to 10. Kulithalai Road, Muthupudayanpatti, Manapprai Tk.",
+                "location": [78.71749428633716, 10.788044771723241],
+                "details": "item mfctred: SPG Mills 27"
+            },
+            {
+                "name": "Cethar Food Oil Ltd., 65/2, Tiruchy Main Road, Umayalpuram, Musiri.",
+                "location": [78.71749428633716, 10.788044771723241],
+                "details": "item manufactured: Rice Bran Oil"
+            },
+            {
+                "name": "Vijay Cements, SF.No.446/3A, 3B. Vellakalpatti Village, item manufactued :Musiri Cement",
+                "location": [78.71749428633716, 10.788044771723241],
+                "details": ""
+            },
+            {
+                "name": "Ruby Chlorates (P) Ltd., 1194. Thaithaiyangarpet Road, Athalapatti, Mettupatti Po., Musiri Tk.",
+                "location": [78.71749428633716, 10.788044771723241],
+                "details": "item manufacured : Cholorate"
+            },
+            {
+                "name": "Cethar Vessels Ltd., 256. Tiruchy-Thuraiyur Road, Pulivalam, Musiri Tk.",
+                "location": [78.71749428633716, 10.788044771723241],
+                "details": "item manufactured: Steel Fabrication"
+            },
+            {
+                "name": "Dalmia cements (Bharath) Ltd., Dalmiapuram, Lalgudi Tk., Tiruchy District",
+                "location": [78.71749428633716, 10.788044771723241],
+                "details": "item manufactured: Clinkers and Cement",
+                "qr": "static/image2.png"
+            },
+            {
+                "name": "Kothari Sugar (P) Ltd.,(temp closed modified loaction will be update shortly)",
+                "location": [78.8184124065859, 10.883601797764255],
+                "details": "Kattur,Lakgudi Tk\nitem mfct: Sugar and Rectified Spirit"
+            },
+            {
+                "name": "Seamless Steel Tube Plant, SF No 572,671, BHEL Complex Fabrication 2000 SF.No.572,671, 679, I.688, 732, I.735,, Tiruchy",
+                "location": [78.71749428633716, 10.788044771723241],
+                "details": ""
+            },
+            {
+                "name": "Ordinance Factory, Ministry of Defence 33/1. Poolangudi, Suriyur Village, Tiruchy.",
+                "location": [78.71749428633716, 10.788044771723241],
+                "details": "item manufact: Defence Stores"
+            },
+            {
+                "name": "Heavy Alloy Penetrator Project SF.No.127/141.Poolangudi Village, Tiruchy.16",
+                "location": [78.71749428633716, 10.788044771723241],
+                "details": "item mfctree: Weapons"
+            },
+            {
+                "name": "Central workshop, Southern Railway, Golden Rock, Tiruchy",
+                "location": [78.71749428633716, 10.788044771723241],
+                "details": "itemmfctured: Locomotive Engine"
+            },
+            {
+                "name": "Tiruchirappalli Coop.Milk Producers Union Ltd., SF.No. 37 & 116. Pudukkottai Road Kottapattu, Tiruchy.",
+                "location": [78.71749428633716, 10.788044771723241],
+                "details": "tem mnfctured: Milk Chilling"
+            },
+            {
+                "name": "High Pressure Boiler Plant, Thiruverambur, Tiruchy.",
+                "location": [78.79049300967456, 10.757837494979269],
+                "details": "item mfctured: Boilers"
+            },
+            {
+                "name": "GB Engineering Enterprises (P) Ltd., D.105-106, D.P. Estate, Tiruchy.15",
+                "location": [78.8024053078249, 10.754042893501518],
+                "details": "item mfcued: Steel Fabrication"
+            },
+            {
+                "name": "Combined Cycle Demonstration Plant, BHEL., Complex, 118.119, 120.Thiruverambur, Tiruchirappalli.",
+                "location": [78.78534105200326, 10.758590913940111],
+                "details": "item mnufactured :Power Plant Equipment"
+            },
+            {
+                "name": "Welding Research Institute, 126. BHEL Complex, Tiruchy. 14.",
+                "location": [78.71749428633716, 10.788044771723241],
+                "details": "item from mnfctring: Research and development"
+            },
+            {
+                "name": "Jothi Malleables (P) Ltd., D.17/18. D.P.Estate, Thuvakudi, Tiruchy",
+                "location": [78.80865731035104, 10.762760691925221],
+                "details": "item prearerd: Iron Castings"
+            }
+        ];
+
+        // Declare map as a global variable
+        let map;
+
+        // Declare popup as a global variable
+        let popup = new mapboxgl.Popup();
+
+        function setupMap(center) {
+            map = new mapboxgl.Map({
+                container: "map",
+                style: "mapbox://styles/mapbox/streets-v11",
+                center: center,
+                zoom: 10
+            });
+
+            // Add a marker for the user's location
+            if (userLocation[0] !== 0 && userLocation[1] !== 0) {
+                new mapboxgl.Marker({ color: "#0000FF" })  // Blue color for user's location
+                    .setLngLat(userLocation)
+                    .setPopup(new mapboxgl.Popup().setHTML("Your Location"))
+                    .addTo(map);
+            }
+
+            // Add markers for industrial estates
+            estates.forEach((estate) => {
+                const marker = new mapboxgl.Marker({ color: "#FF0000" })  // Red color for industrial estates
+                    .setLngLat(estate.location)
+                    .addTo(map);
+
+                marker.getElement().addEventListener('click', function () {
+                    showDetails(estate);
+                });
+            });
+        }
+
+        // Function to search for an industrial estate
+        window.searchLocation = function () {
+            const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+
+            // Perform search logic and fly to the found estate
+            // For simplicity, let's assume the first match is the result
+            const foundEstate = estates.find((estate) => estate.name.toLowerCase().includes(searchTerm));
+
+            if (foundEstate) {
+                map.flyTo({ center: foundEstate.location, zoom: 15 });
+                showDetails(foundEstate);
+            } else {
+                alert("Industrial estate not found!");
+            }
+        };
+
+        function updateSuggestionBox(suggestion) {
+            const suggestionBox = document.getElementById("suggestionBox");
+            suggestionBox.innerHTML = `<h3>Suggestion:</h3><p>${suggestion}</p>`;
+        }
+
+        function showDetails(estate) {
+            const estateNameElement = document.getElementById("estateName");
+            const estateDetailsElement = document.getElementById("estateDetails");
+            const detailsBoxElement = document.getElementById("detailsBox");
+
+            estateNameElement.textContent = estate.name;
+
+            // Clear previous content in details box
+            while (estateDetailsElement.firstChild) {
+                estateDetailsElement.removeChild(estateDetailsElement.firstChild);
+            }
+
+            // Create elements for details
+            const detailsParagraph = document.createElement('p');
+            detailsParagraph.textContent = estate.details;
+
+            // Set the image in the details box with a maximum width
+            const imageElement = document.createElement('img');
+            imageElement.src = estate.image;
+            imageElement.alt = estate.name;
+            imageElement.style.maxWidth = '100%'; // Set a maximum width for the image
+
+            // Set the QR code in the details box with a maximum width
+            const qrElement = document.createElement('img');
+            qrElement.src = estate.qr;
+            qrElement.alt = estate.name;
+            qrElement.style.maxWidth = '100%'; // Set a maximum width for the image
+
+            // Create a link for the website
+            const websiteLink = document.createElement('a');
+            websiteLink.href = estate.url;
+            websiteLink.textContent = 'Visit Website';
+            websiteLink.target = '_blank'; // Open link in a new tab
+            websiteLink.id = 'websiteLink'; // Add the ID for styling
+
+            // Create a link for the "Locate Me" action
+            const redirectToIndexLink = document.createElement('a');
+            redirectToIndexLink.href = `/index?user_latitude=${userLatitude}&user_longitude=${userLongitude}&industry_latitude=${estate.location[1]}&industry_longitude=${estate.location[0]}`;
+            redirectToIndexLink.textContent = 'Locate Me';
+            redirectToIndexLink.id = 'locateMeLink'; // Add the ID for styling
+            // Append details, website link, and image to the details box
+            estateDetailsElement.appendChild(detailsParagraph);
+            estateDetailsElement.appendChild(websiteLink);
+            estateDetailsElement.appendChild(imageElement);
+            estateDetailsElement.appendChild(qrElement);
+            estateDetailsElement.appendChild(redirectToIndexLink); // Add the redirect link
+
+            // Update the suggestion box
+            updateSuggestionBox(estate.suggest);
+
+            // Show details box
+            detailsBoxElement.style.display = 'block';
+
+            // Close any previous popup
+            popup.remove();
+
+            // Set popup on the marker
+            popup.setLngLat(estate.location)
+                .setHTML('<h3>' + estate.name + '</h3><p>' + estate.details + '</p><a href="' + estate.url + '" target="_blank" class="link-style">Visit Website</a>')
+                .addTo(map);
+        }
+
+
+
+
+
+
+
+        // Call the setupMap function with the user's location
+        setupMap(userLocation);
+        // ... (other code)
+
+        // Add an event listener to the "Search" button
+        document.getElementById("searchBtn").addEventListener("click", function () {
+            // Handle the click event on the "Search" button
+            searchLocation();
+            // Display the detailsBox and suggestionBox
+            document.getElementById("detailsBox").style.display = "block";
+            document.getElementById("suggestionBox").style.display = "block";
+        });
+    </script>
+</body>
+
+</html>
